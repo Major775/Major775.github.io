@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collecte IA - Données Coopérateurs</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            padding: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            min-height: 80vh;
+        }
+
+        @media (max-width: 768px) {
+            .app-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Navigation */
+        .sidebar {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .user-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            padding: 15px;
+            margin: 5px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item:hover {
+            background: var(--light);
+        }
+
+        .nav-item.active {
+            background: var(--secondary);
+            color: white;
+        }
+
+        /* Contenu principal */
+        .main-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Cartes de formulaire */
+        .form-card {
+            background: var(--light);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .form-card h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Boutons */
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary) 0%, #2980b9 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #219a52 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #e67e22 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Cartes statistiques */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--secondary);
+        }
+
+        .stat-card i {
+            font-size: 2rem;
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Graphiques */
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .chart-title {
+            color: var(--primary);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* Tableau */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .data-table th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        .data-table tr:hover {
+            background: var(--light);
+        }
+
+        /* Insights IA */
+        .ai-insight {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .ai-insight h4 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* Login */
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .login-container h2 {
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Page de connexion -->
+    <div id="loginPage" class="login-container">
+        <h2><i class="fas fa-robot"></i> Connexion IA Coopérateurs</h2>
+        <div class="form-group">
+            <input type="text" id="username" class="form-control" placeholder="👤 Nom d'utilisateur">
+        </div>
+        <div class="form-group">
+            <input type="password" id="password" class="form-control" placeholder="🔒 Mot de passe">
+        </div>
+        <button class="btn btn-primary" onclick="login()" style="width: 100%;">
+            <i class="fas fa-rocket"></i> Se Connecter
+        </button>
+        <div style="margin-top: 20px; color: #666; font-size: 12px;">
+            <p>💡 Comptes démo: admin/admin123 | agent/agent123</p>
+        </div>
+    </div>
+
+    <!-- Application principale -->
+    <div id="app" class="hidden">
+        <div class="header">
+            <h1><i class="fas fa-robot"></i> IA Coopérateurs Pro</h1>
+            <p>Collecte intelligente de données pour coopératives</p>
+        </div>
+
+        <div class="container">
+            <div class="app-container">
+                <!-- Navigation -->
+                <div class="sidebar">
+                    <div class="user-info">
+                        <h3 id="currentUser">Utilisateur</h3>
+                        <p id="userRole">Rôle</p>
+                    </div>
+                    <ul class="nav-menu">
+                        <li class="nav-item active" onclick="showTab('form')">
+                            <i class="fas fa-pen-to-square"></i>
+                            <span>Formulaire Intelligent</span>
+                        </li>
+                        <li class="nav-item admin-only" onclick="showTab('dashboard')">
+                            <i class="fas fa-dashboard"></i>
+                            <span>Tableau de Bord IA</span>
+                        </li>
+                        <li class="nav-item admin-only" onclick="showTab('data')">
+                            <i class="fas fa-database"></i>
+                            <span>Données Collectées</span>
+                        </li>
+                        <li class="nav-item admin-only" onclick="showTab('export')">
+                            <i class="fas fa-file-export"></i>
+                            <span>Export IA</span>
+                        </li>
+                    </ul>
+                    <button class="btn btn-warning" onclick="logout()" style="width: 100%; margin-top: 20px;">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </button>
+                </div>
+
+                <!-- Contenu principal -->
+                <div class="main-content">
+                    <!-- Insight IA -->
+                    <div class="ai-insight">
+                        <h4><i class="fas fa-brain"></i> Insight IA</h4>
+                        <p id="aiInsight">Bienvenue ! Commencez à collecter des données pour obtenir des insights intelligents.</p>
+                    </div>
+
+                    <!-- Formulaire de collecte -->
+                    <div id="form" class="tab-content active">
+                        <h2><i class="fas fa-pen-to-square"></i> Formulaire de Collecte</h2>
+                        
+                        <div class="form-card">
+                            <h3><i class="fas fa-user-circle"></i> Informations Personnelles</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nom complet *</label>
+                                    <input type="text" id="nom" class="form-control" placeholder="Entrez le nom complet">
+                                </div>
+                                <div class="form-group">
+                                    <label>Genre *</label>
+                                    <select id="genre" class="form-control">
+                                        <option value="">Sélectionnez</option>
+                                        <option value="Masculin">Masculin</option>
+                                        <option value="Féminin">Féminin</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Téléphone *</label>
+                                    <input type="tel" id="telephone" class="form-control" placeholder="+225 XX XX XX XX">
+                                </div>
+                                <div class="form-group">
+                                    <label>Région *</label>
+                                    <select id="region" class="form-control">
+                                        <option value="">Sélectionnez</option>
+                                        <option value="Nord">Nord</option>
+                                        <option value="Sud">Sud</option>
+                                        <option value="Est">Est</option>
+                                        <option value="Ouest">Ouest</option>
+                                        <option value="Centre">Centre</option>
+                                        <option value="Littoral">Littoral</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-card">
+                            <h3><i class="fas fa-building"></i> Informations Coopérative</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Type de coopérative *</label>
+                                    <select id="typeCooperative" class="form-control">
+                                        <option value="">Sélectionnez</option>
+                                        <option value="Agriculture">Agriculture</option>
+                                        <option value="Élevage">Élevage</option>
+                                        <option value="Artisanat">Artisanat</option>
+                                        <option value="Commerce">Commerce</option>
+                                        <option value="Services">Services</option>
+                                        <option value="Autre">Autre</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Nombre de membres *</label>
+                                    <input type="number" id="nombreMembres" class="form-control" value="1" min="1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-card">
+                            <h3><i class="fas fa-chart-line"></i> Performance</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Chiffre d'affaires annuel (FCFA)</label>
+                                    <input type="number" id="chiffreAffaire" class="form-control" value="0" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label>Accès au crédit</label>
+                                    <select id="accesCredit" class="form-control">
+                                        <option value="">Sélectionnez</option>
+                                        <option value="Oui">Oui</option>
+                                        <option value="Non">Non</option>
+                                        <option value="En cours">En cours</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <button class="btn btn-primary" onclick="submitForm()">
+                                <i class="fas fa-paper-plane"></i> Soumettre le Formulaire
+                            </button>
+                            <button class="btn btn-warning" onclick="resetForm()">
+                                <i class="fas fa-undo"></i> Effacer
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tableau de bord -->
+                    <div id="dashboard" class="tab-content">
+                        <h2><i class="fas fa-dashboard"></i> Tableau de Bord IA</h2>
+                        
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <i class="fas fa-users"></i>
+                                <div class="stat-number" id="totalCooperateurs">0</div>
+                                <div class="stat-label">Total Coopérateurs</div>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fas fa-chart-line"></i>
+                                <div class="stat-number" id="caMoyen">0M</div>
+                                <div class="stat-label">CA Moyen (FCFA)</div>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fas fa-female"></i>
+                                <div class="stat-number" id="tauxFeminin">0%</div>
+                                <div class="stat-label">Taux de Femmes</div>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fas fa-user-friends"></i>
+                                <div class="stat-number" id="moyenneMembres">0</div>
+                                <div class="stat-label">Membres/Coop</div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="chart-container">
+                                <h3 class="chart-title">Répartition par Type de Coopérative</h3>
+                                <canvas id="chartType"></canvas>
+                            </div>
+                            <div class="chart-container">
+                                <h3 class="chart-title">Répartition par Région</h3>
+                                <canvas id="chartRegion"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Données collectées -->
+                    <div id="data" class="tab-content">
+                        <h2><i class="fas fa-database"></i> Données Collectées</h2>
+                        <div class="chart-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nom</th>
+                                        <th>Genre</th>
+                                        <th>Région</th>
+                                        <th>Type</th>
+                                        <th>Membres</th>
+                                        <th>CA (FCFA)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dataTableBody">
+                                    <!-- Les données seront ajoutées ici dynamiquement -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Export -->
+                    <div id="export" class="tab-content">
+                        <h2><i class="fas fa-file-export"></i> Export des Données</h2>
+                        <div class="form-card">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Format d'export</label>
+                                    <select id="exportFormat" class="form-control">
+                                        <option value="csv">CSV</option>
+                                        <option value="excel">Excel</option>
+                                        <option value="json">JSON</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Nom du fichier</label>
+                                    <input type="text" id="exportFilename" class="form-control" value="cooperateurs_export">
+                                </div>
+                            </div>
+                            <button class="btn btn-success" onclick="exportData()">
+                                <i class="fas fa-download"></i> Télécharger l'Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Données de l'application
+        let currentUser = null;
+        let cooperateurs = [];
+        let charts = {};
+
+        // Données d'exemple
+        const exampleData = [
+            { id: 1, nom: "Coopérateur 1", genre: "Masculin", telephone: "+22501000001", region: "Nord", typeCooperative: "Agriculture", nombreMembres: 25, chiffreAffaire: 2500000, accesCredit: "Oui" },
+            { id: 2, nom: "Coopérateur 2", genre: "Féminin", telephone: "+22501000002", region: "Sud", typeCooperative: "Élevage", nombreMembres: 15, chiffreAffaire: 1800000, accesCredit: "Non" },
+            { id: 3, nom: "Coopérateur 3", genre: "Masculin", telephone: "+22501000003", region: "Est", typeCooperative: "Commerce", nombreMembres: 30, chiffreAffaire: 5000000, accesCredit: "Oui" },
+            { id: 4, nom: "Coopérateur 4", genre: "Féminin", telephone: "+22501000004", region: "Ouest", typeCooperative: "Artisanat", nombreMembres: 12, chiffreAffaire: 800000, accesCredit: "En cours" },
+            { id: 5, nom: "Coopérateur 5", genre: "Masculin", telephone: "+22501000005", region: "Centre", typeCooperative: "Services", nombreMembres: 20, chiffreAffaire: 3000000, accesCredit: "Oui" }
+        ];
+
+        // Base de données utilisateurs
+        const users = [
+            { username: "admin", password: "admin123", role: "admin" },
+            { username: "agent", password: "agent123", role: "agent" }
+        ];
+
+        // Initialisation
+        function init() {
+            cooperateurs = [...exampleData];
+            updateStats();
+            updateDataTable();
+            initCharts();
+        }
+
+        // Connexion
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                currentUser = user;
+                document.getElementById('loginPage').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                
+                document.getElementById('currentUser').textContent = user.username;
+                document.getElementById('userRole').textContent = user.role === 'admin' ? 'Administrateur' : 'Agent';
+                
+                // Masquer les éléments admin pour les agents
+                const adminElements = document.querySelectorAll('.admin-only');
+                adminElements.forEach(el => {
+                    el.style.display = user.role === 'admin' ? 'flex' : 'none';
+                });
+
+                updateAIInsight();
+                init();
+            } else {
+                alert('❌ Identifiants incorrects !');
+            }
+        }
+
+        // Déconnexion
+        function logout() {
+            currentUser = null;
+            document.getElementById('app').classList.add('hidden');
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        // Navigation par onglets
+        function showTab(tabName) {
+            // Masquer tous les onglets
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Désactiver tous les éléments de navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Activer l'onglet sélectionné
+            document.getElementById(tabName).classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            // Mettre à jour les graphiques si onglet dashboard
+            if (tabName === 'dashboard') {
+                updateCharts();
+            }
+        }
+
+        // Soumission du formulaire
+        function submitForm() {
+            const nom = document.getElementById('nom').value;
+            const genre = document.getElementById('genre').value;
+            const telephone = document.getElementById('telephone').value;
+            const region = document.getElementById('region').value;
+            const typeCooperative = document.getElementById('typeCooperative').value;
+            const nombreMembres = document.getElementById('nombreMembres').value;
+            const chiffreAffaire = document.getElementById('chiffreAffaire').value;
+            const accesCredit = document.getElementById('accesCredit').value;
+
+            // Validation
+            if (!nom || !genre || !telephone || !region || !typeCooperative || !nombreMembres) {
+                alert('❌ Veuillez remplir tous les champs obligatoires (*)');
+                return;
+            }
+
+            // Ajouter le nouveau coopérateur
+            const newCoop = {
+                id: cooperateurs.length + 1,
+                nom,
+                genre,
+                telephone,
+                region,
+                typeCooperative,
+                nombreMembres: parseInt(nombreMembres),
+                chiffreAffaire: parseInt(chiffreAffaire),
+                accesCredit,
+                dateSoumission: new Date().toLocaleDateString('fr-FR')
+            };
+
+            cooperateurs.push(newCoop);
+            
+            // Réinitialiser le formulaire
+            resetForm();
+            
+            // Mettre à jour l'interface
+            updateStats();
+            updateDataTable();
+            updateCharts();
+            updateAIInsight();
+            
+            alert('✅ Formulaire soumis avec succès !');
+        }
+
+        // Réinitialisation du formulaire
+        function resetForm() {
+            document.getElementById('nom').value = '';
+            document.getElementById('genre').value = '';
+            document.getElementById('telephone').value = '';
+            document.getElementById('region').value = '';
+            document.getElementById('typeCooperative').value = '';
+            document.getElementById('nombreMembres').value = '1';
+            document.getElementById('chiffreAffaire').value = '0';
+            document.getElementById('accesCredit').value = '';
+        }
+
+        // Mise à jour des statistiques
+        function updateStats() {
+            const total = cooperateurs.length;
+            const caMoyen = total > 0 ? cooperateurs.reduce((sum, coop) => sum + coop.chiffreAffaire, 0) / total : 0;
+            const tauxFeminin = total > 0 ? (cooperateurs.filter(coop => coop.genre === 'Féminin').length / total) * 100 : 0;
+            const moyenneMembres = total > 0 ? cooperateurs.reduce((sum, coop) => sum + coop.nombreMembres, 0) / total : 0;
+
+            document.getElementById('totalCooperateurs').textContent = total;
+            document.getElementById('caMoyen').textContent = (caMoyen / 1000000).toFixed(1) + 'M';
+            document.getElementById('tauxFeminin').textContent = tauxFeminin.toFixed(1) + '%';
+            document.getElementById('moyenneMembres').textContent = Math.round(moyenneMembres);
+        }
+
+        // Mise à jour du tableau de données
+        function updateDataTable() {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '';
+
+            cooperateurs.forEach(coop => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${coop.id}</td>
+                    <td>${coop.nom}</td>
+                    <td>${coop.genre}</td>
+                    <td>${coop.region}</td>
+                    <td>${coop.typeCooperative}</td>
+                    <td>${coop.nombreMembres}</td>
+                    <td>${coop.chiffreAffaire.toLocaleString()} FCFA</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Initialisation des graphiques
+        function initCharts() {
+            const ctxType = document.getElementById('chartType').getContext('2d');
+            const ctxRegion = document.getElementById('chartRegion').getContext('2d');
+
+            charts.type = new Chart(ctxType, {
+                type: 'bar',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Répartition par Type' }
+                    }
+                }
+            });
+
+            charts.region = new Chart(ctxRegion, {
+                type: 'pie',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        title: { display: true, text: 'Répartition par Région' }
+                    }
+                }
+            });
+
+            updateCharts();
+        }
+
+        // Mise à jour des graphiques
+        function updateCharts() {
+            // Graphique par type
+            const types = [...new Set(cooperateurs.map(coop => coop.typeCooperative))];
+            const typeCounts = types.map(type => cooperateurs.filter(coop => coop.typeCooperative === type).length);
+
+            charts.type.data.labels = types;
+            charts.type.data.datasets[0].data = typeCounts;
+            charts.type.data.datasets[0].backgroundColor = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD'];
+            charts.type.update();
+
+            // Graphique par région
+            const regions = [...new Set(cooperateurs.map(coop => coop.region))];
+            const regionCounts = regions.map(region => cooperateurs.filter(coop => coop.region === region).length);
+
+            charts.region.data.labels = regions;
+            charts.region.data.datasets[0].data = regionCounts;
+            charts.region.data.datasets[0].backgroundColor = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'];
+            charts.region.update();
+        }
+
+        // Mise à jour des insights IA
+        function updateAIInsight() {
+            const insightElement = document.getElementById('aiInsight');
+            const total = cooperateurs.length;
+
+            if (total === 0) {
+                insightElement.textContent = "🤖 Bienvenue ! Commencez à collecter des données pour obtenir des insights intelligents.";
+            } else {
+                const tauxFeminin = (cooperateurs.filter(coop => coop.genre === 'Féminin').length / total) * 100;
+                const caMoyen = cooperateurs.reduce((sum, coop) => sum + coop.chiffreAffaire, 0) / total;
+                
+                insightElement.textContent = 
+                    `🤖 Analyse IA: ${total} coopérateurs collectés. ` +
+                    `Taux de femmes: ${tauxFeminin.toFixed(1)}%. ` +
+                    `CA moyen: ${(caMoyen / 1000000).toFixed(1)}M FCFA. ` +
+                    `Continuez l'excellente collecte !`;
+            }
+        }
+
+        // Export des données
+        function exportData() {
+            const format = document.getElementById('exportFormat').value;
+            const filename = document.getElementById('exportFilename').value;
+
+            let content, mimeType, extension;
+
+            switch (format) {
+                case 'csv':
+                    content = convertToCSV(cooperateurs);
+                    mimeType = 'text/csv';
+                    extension = 'csv';
+                    break;
+                case 'json':
+                    content = JSON.stringify(cooperateurs, null, 2);
+                    mimeType = 'application/json';
+                    extension = 'json';
+                    break;
+                case 'excel':
+                    content = convertToCSV(cooperateurs);
+                    mimeType = 'application/vnd.ms-excel';
+                    extension = 'xls';
+                    break;
+            }
+
+            downloadFile(content, `${filename}.${extension}`, mimeType);
+        }
+
+        // Conversion en CSV
+        function convertToCSV(data) {
+            const headers = Object.keys(data[0]);
+            const csv = [
+                headers.join(','),
+                ...data.map(row => headers.map(header => row[header]).join(','))
+            ].join('\n');
+            
+            return csv;
+        }
+
+        // Téléchargement de fichier
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialisation au chargement
+        document.addEventListener('DOMContentLoaded', function() {
+            // Raccourci de connexion pour le développement
+            document.getElementById('username').value = 'admin';
+            document.getElementById('password').value = 'admin123';
+        });
+    </script>
+</body>
+</html>
